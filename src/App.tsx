@@ -3,10 +3,25 @@ import axios from "axios";
 import "./App.css";
 import { YMaps, Map, Placemark } from '@pbe/react-yandex-maps';
 
+// Pharmacy interface'ini tanımlayalım
+interface Pharmacy {
+  name: string;
+  dist: string;
+  address: string;
+  phone: string;
+  loc: string;
+}
+
+// UserLocation interface'ini tanımlayalım
+interface UserLocation {
+  lat: number;
+  lng: number;
+}
+
 function App() {
-  const [pharmacies, setPharmacies] = useState([]);
-  const [error, setError] = useState(null);
-  const [userLocation, setUserLocation] = useState(null);
+  const [pharmacies, setPharmacies] = useState<Pharmacy[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   const getData = async () => {
@@ -15,7 +30,7 @@ function App() {
         `https://api.collectapi.com/health/dutyPharmacy?il=Ankara`,
         {
           headers: {
-            authorization: "apikey 6MJXlgtLId3xQhPADAZJU1:5CmZVc4twnvCnROloYfCcq",
+            authorization: "apikey 7GKEQWT4oSSvsscEmvah5C:4T6Lnv01pOxCyBedZS1TD2",
             "content-type": "application/json",
           },
         }
@@ -33,8 +48,8 @@ function App() {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setUserLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
+            lat: position?.coords?.latitude,
+            lng: position?.coords?.longitude
           });
         },
         (error) => {
@@ -46,21 +61,7 @@ function App() {
     getData();
   }, []);
 
-  const openAllPharmaciesMap = () => {
-    // Tüm eczanelerin konumlarını URL'de birleştirme
-    const markers = pharmacies
-      .map((pharmacy, index) => {
-        const [lat, lon] = pharmacy.loc.split(",");
-        return `marker=${lat},${lon}&name=${encodeURIComponent(pharmacy.name)}`;
-      })
-      .join("&");
 
-    // OpenStreetMap'te merkezi konum olarak Ankara'yı kullanma
-    window.open(
-      `https://www.openstreetmap.org/?mlat=39.9334&mlon=32.8597&zoom=11&${markers}`,
-      "_blank"
-    );
-  };
 
   const mapState = {
     center: [39.9334, 32.8597],
@@ -68,8 +69,8 @@ function App() {
   };
 
   // Filtrelenmiş eczaneleri hesapla
-  const filteredPharmacies = pharmacies.filter(pharmacy =>
-    pharmacy.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredPharmacies = pharmacies?.filter(pharmacy =>
+    pharmacy?.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -87,19 +88,19 @@ function App() {
         >
           {/* Eczane konumları */}
           {pharmacies.map((pharmacy, index) => {
-            const [lat, lng] = pharmacy.loc.split(",").map(Number);
+            const [lat, lng] = pharmacy?.loc.split(",").map(Number);
             return (
               <Placemark
                 key={index}
                 geometry={[lat, lng]}
                 properties={{
-                  hintContent: pharmacy.name,
+                  hintContent: pharmacy?.name,
                   balloonContent: `
                     <strong>${pharmacy.name}</strong><br/>
-                    ${pharmacy.address}<br/>
-                    Tel: ${pharmacy.phone}
+                    ${pharmacy?.address}<br/>
+                    Tel: ${pharmacy?.phone}
                   `,
-                  iconCaption: pharmacy.name
+                  iconCaption: pharmacy?.name
                 }}
                 options={{
                   preset: 'islands#redMedicalIcon',
@@ -112,7 +113,7 @@ function App() {
           {/* Kullanıcı konumu */}
           {userLocation && (
             <Placemark
-              geometry={[userLocation.lat, userLocation.lng]}
+              geometry={[userLocation?.lat, userLocation?.lng]}
               properties={{
                 hintContent: 'Sizin Konumunuz',
                 balloonContent: 'Şu an buradasınız',
@@ -144,7 +145,7 @@ function App() {
         />
       </div>
 
-      <table border="1" style={{ width: "100%", textAlign: "left", marginTop: "20px" }}>
+      <table border={1} style={{ width: "100%", textAlign: "left", marginTop: "20px" }}>
         <thead>
           <tr>
             <th>Eczane Adı</th>
@@ -157,15 +158,15 @@ function App() {
         <tbody>
           {filteredPharmacies?.map((pharmacy, index) => (
             <tr key={index}>
-              <td>{pharmacy.name}</td>
-              <td>{pharmacy.dist}</td>
-              <td>{pharmacy.address}</td>
-              <td>{pharmacy.phone}</td>
+              <td>{pharmacy?.name}</td>
+              <td>{pharmacy?.dist}</td>
+              <td>{pharmacy?.address}</td>
+              <td>{pharmacy?.phone}</td>
               <td>
                 <button
                   onClick={() =>
                     window.open(
-                      `https://www.openstreetmap.org/?mlat=${pharmacy.loc.split(",")[0]}&mlon=${pharmacy.loc.split(",")[1]}&zoom=15`,
+                      `https://www.openstreetmap.org/?mlat=${pharmacy?.loc?.split(",")[0]}&mlon=${pharmacy?.loc?.split(",")[1]}&zoom=15`,
                       "_blank"
                     )
                   }
